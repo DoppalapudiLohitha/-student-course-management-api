@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta, timezone
 
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -12,7 +13,20 @@ from app.models.course import Course
 from app.models.enrollment import Enrollment
 from app.models.student import Student
 
-SECRET_KEY = "change-this-secret-key-before-deployment"
+SECRET_KEY = os.getenv(
+    "SECRET_KEY",
+    "development-only-change-this-before-deployment",
+)
+
+ADMIN_EMAIL = os.getenv(
+    "ADMIN_EMAIL",
+    "admin@courseapi.com",
+)
+
+ADMIN_PASSWORD = os.getenv(
+    "ADMIN_PASSWORD",
+    "Admin@123",
+)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
@@ -170,17 +184,17 @@ def create_default_admin():
     try:
         admin = (
             db.query(Student)
-            .filter(Student.email == "admin@courseapi.com")
+            .filter(Student.email == ADMIN_EMAIL)
             .first()
         )
 
         if not admin:
             admin = Student(
                 full_name="System Administrator",
-                email="admin@courseapi.com",
+                email=ADMIN_EMAIL,
                 department="Administration",
                 year=1,
-                password_hash=hash_password("Admin@123"),
+                password_hash=hash_password(ADMIN_PASSWORD),
                 role="admin",
             )
 
